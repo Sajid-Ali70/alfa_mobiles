@@ -338,50 +338,70 @@
         </div>
     </footer>
 
-    <div class="modal fade" id="footerPageModal" tabindex="-1" aria-labelledby="footerPageModalTitle" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2 class="modal-title fs-5" id="footerPageModalTitle"></h2>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="footer-modal-description" id="footerPageModalDescription"></div>
-                    <div class="footer-modal-images" id="footerPageModalImages"></div>
-                </div>
+    <div class="footer-page-modal" id="footerPageModal" aria-hidden="true">
+        <section class="footer-page-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="footerPageModalTitle">
+            <header class="footer-page-modal-header">
+                <h2 id="footerPageModalTitle"></h2>
+                <button type="button" class="footer-page-modal-close" id="footerPageModalClose" aria-label="Close">&times;</button>
+            </header>
+            <div class="footer-page-modal-body">
+                <div class="footer-modal-description" id="footerPageModalDescription"></div>
+                <div class="footer-modal-images" id="footerPageModalImages"></div>
             </div>
-        </div>
+        </section>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('js/firebase-config.js') }}"></script>
     <script src="{{ asset('js/app.js') }}"></script>
     <script>
         const footerContent = @json($footerContent);
-        const footerPageModal = new bootstrap.Modal(document.getElementById('footerPageModal'));
+        const footerPageModal = document.getElementById('footerPageModal');
+        const footerPageModalTitle = document.getElementById('footerPageModalTitle');
+        const footerPageModalDescription = document.getElementById('footerPageModalDescription');
+        const footerPageModalImages = document.getElementById('footerPageModalImages');
+        const closeFooterPageModal = () => {
+            footerPageModal.classList.remove('is-open');
+            footerPageModal.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('footer-modal-open');
+        };
 
         document.querySelectorAll('[data-footer-page]').forEach((link) => {
             link.addEventListener('click', (event) => {
                 event.preventDefault();
 
-                const page = footerContent[link.dataset.footerPage];
-                if (!page) return;
+                const page = footerContent[link.dataset.footerPage] || {
+                    title: link.querySelector('span')?.innerText.replace(/\s+/g, ' ').trim() || 'Information',
+                    description: '',
+                    images: []
+                };
 
-                document.getElementById('footerPageModalTitle').textContent = page.title;
-                document.getElementById('footerPageModalDescription').textContent = page.description || 'Information coming soon.';
+                footerPageModalTitle.textContent = page.title;
+                footerPageModalDescription.textContent = page.description || 'Information coming soon.';
 
-                const imageContainer = document.getElementById('footerPageModalImages');
-                imageContainer.replaceChildren();
+                footerPageModalImages.replaceChildren();
                 (page.images || []).forEach((imagePath) => {
                     const image = document.createElement('img');
                     image.src = imagePath;
                     image.alt = page.title;
                     image.loading = 'lazy';
-                    imageContainer.appendChild(image);
+                    footerPageModalImages.appendChild(image);
                 });
 
-                footerPageModal.show();
+                footerPageModal.classList.add('is-open');
+                footerPageModal.setAttribute('aria-hidden', 'false');
+                document.body.classList.add('footer-modal-open');
+                document.getElementById('footerPageModalClose').focus();
             });
+        });
+
+        document.getElementById('footerPageModalClose').addEventListener('click', closeFooterPageModal);
+        footerPageModal.addEventListener('click', (event) => {
+            if (event.target === footerPageModal) closeFooterPageModal();
+        });
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && footerPageModal.classList.contains('is-open')) {
+                closeFooterPageModal();
+            }
         });
     </script>
 </body>

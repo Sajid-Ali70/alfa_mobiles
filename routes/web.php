@@ -2,7 +2,10 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
+use App\Support\FooterPageCatalog;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 Route::get('/', function () {
     $settings = null;
@@ -30,19 +33,36 @@ Route::get('/', function () {
         ];
     }
 
-    $footerContent = collect(config('footer_pages'))->mapWithKeys(function ($title, $slug) {
-        $page = DB::table('footer_pages')->where('slug', $slug)->first();
-
+    $footerPageTitles = FooterPageCatalog::all();
+    $footerContent = collect($footerPageTitles)->mapWithKeys(function ($title, $slug) {
         return [$slug => [
             'title' => $title,
-            'description' => $page->description ?? '',
-            'images' => json_decode($page->images ?? '[]', true) ?: [],
+            'description' => '',
+            'images' => [],
         ]];
     });
 
     $theme = $settings->active_theme ?? 'playstore';
     if ($theme === 'landing') {
         return view('index', compact('settings'));
+    }
+
+    try {
+        if (Schema::hasTable('footer_pages')) {
+            $footerContent = collect($footerPageTitles)->mapWithKeys(function ($title, $slug) {
+                $page = DB::table('footer_pages')->where('slug', $slug)->first();
+
+                return [$slug => [
+                    'title' => $title,
+                    'description' => $page->description ?? '',
+                    'images' => json_decode($page->images ?? '[]', true) ?: [],
+                ]];
+            });
+        } else {
+            Log::warning('Footer page content is unavailable because the footer_pages table has not been created.');
+        }
+    } catch (\Throwable $e) {
+        Log::warning('Could not load footer page content.', ['exception' => $e]);
     }
 
     return view('frontend.index', compact('settings', 'footerContent'));

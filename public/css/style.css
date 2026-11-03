@@ -521,6 +521,65 @@ body {
     font-size: 16px;
 }
 
+.footer-page-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.55);
+}
+
+.footer-page-modal.is-open {
+    display: flex;
+}
+
+.footer-page-modal-dialog {
+    width: min(100%, 800px);
+    max-height: min(90vh, 900px);
+    overflow: auto;
+    border-radius: 12px;
+    background: #fff;
+    color: #202124;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+}
+
+.footer-page-modal-header {
+    position: sticky;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 20px;
+    border-bottom: 1px solid #dadce0;
+    background: #fff;
+}
+
+.footer-page-modal-header h2 {
+    margin: 0;
+    font-size: 20px;
+}
+
+.footer-page-modal-close {
+    flex: 0 0 auto;
+    border: 0;
+    background: transparent;
+    color: #5f6368;
+    font-size: 30px;
+    line-height: 1;
+}
+
+.footer-page-modal-body {
+    padding: 20px;
+}
+
+body.footer-modal-open {
+    overflow: hidden;
+}
+
 .footer-modal-description {
     white-space: pre-line;
 }

@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\FooterPageCatalog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 
 class AdminController extends Controller
 {
@@ -63,9 +65,11 @@ class AdminController extends Controller
             ];
         }
 
-        $footerPages = collect(config('footer_pages'))
+        $footerPages = collect(FooterPageCatalog::all())
             ->map(function ($title, $slug) {
-                $page = DB::table('footer_pages')->where('slug', $slug)->first();
+                $page = Schema::hasTable('footer_pages')
+                    ? DB::table('footer_pages')->where('slug', $slug)->first()
+                    : null;
 
                 return [
                     'slug' => $slug,
@@ -81,7 +85,8 @@ class AdminController extends Controller
 
     public function updateFooterPages(Request $request)
     {
-        $pageSlugs = array_keys(config('footer_pages'));
+        $footerPageTitles = FooterPageCatalog::all();
+        $pageSlugs = array_keys($footerPageTitles);
         $request->validate([
             'pages' => ['required', 'array:' . implode(',', $pageSlugs)],
         ]);
@@ -98,7 +103,7 @@ class AdminController extends Controller
             $uploadDirectory = public_path('uploads/footer');
             File::ensureDirectoryExists($uploadDirectory);
 
-            foreach (config('footer_pages') as $slug => $title) {
+            foreach ($footerPageTitles as $slug => $title) {
                 $page = DB::table('footer_pages')->where('slug', $slug)->first();
                 $images = json_decode($page->images ?? '[]', true) ?: [];
 
@@ -129,7 +134,7 @@ class AdminController extends Controller
     public function removeFooterPageImage(Request $request)
     {
         $request->validate([
-            'slug' => ['required', 'string', 'in:' . implode(',', array_keys(config('footer_pages')))],
+            'slug' => ['required', 'string', 'in:' . implode(',', array_keys(FooterPageCatalog::all()))],
             'index' => 'required|integer|min:0',
         ]);
 
