@@ -63,7 +63,102 @@ class AdminController extends Controller
             ];
         }
 
-        return view('admin.dashboard', compact('settings', 'reviews'));
+        $footerPages = collect(config('footer_pages'))
+            ->map(function ($title, $slug) {
+                $page = DB::table('footer_pages')->where('slug', $slug)->first();
+
+                return [
+                    'slug' => $slug,
+                    'title' => $title,
+                    'description' => $page->description ?? '',
+                    'images' => json_decode($page->images ?? '[]', true) ?: [],
+                ];
+            })
+            ->values();
+
+        return view('admin.dashboard', compact('settings', 'reviews', 'footerPages'));
+    }
+
+    public function updateFooterPages(Request $request)
+    {
+        $pageSlugs = array_keys(config('footer_pages'));
+        $request->validate([
+            'pages' => ['required', 'array:' . implode(',', $pageSlugs)],
+        ]);
+
+        foreach ($pageSlugs as $slug) {
+            $request->validate([
+                "pages.$slug.description" => 'nullable|string|max:20000',
+                "pages.$slug.images" => 'nullable|array|max:10',
+                "pages.$slug.images.*" => 'image|max:5120',
+            ]);
+        }
+
+        try {
+            $uploadDirectory = public_path('uploads/footer');
+            File::ensureDirectoryExists($uploadDirectory);
+
+            foreach (config('footer_pages') as $slug => $title) {
+                $page = DB::table('footer_pages')->where('slug', $slug)->first();
+                $images = json_decode($page->images ?? '[]', true) ?: [];
+
+                foreach ($request->file("pages.$slug.images", []) as $file) {
+                    $fileName = $slug . '_' . uniqid() . '.' . $file->extension();
+                    $file->move($uploadDirectory, $fileName);
+                    $images[] = '/uploads/footer/' . $fileName;
+                }
+
+                DB::table('footer_pages')->updateOrInsert(
+                    ['slug' => $slug],
+                    [
+                        'title' => $title,
+                        'description' => $request->input("pages.$slug.description", ''),
+                        'images' => json_encode($images),
+                        'updated_at' => now(),
+                        'created_at' => $page->created_at ?? now(),
+                    ]
+                );
+            }
+
+            return response()->json(['message' => 'Footer content saved successfully']);
+        } catch (\Throwable $e) {
+            return response()->json(['message' => 'Could not save footer content: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function removeFooterPageImage(Request $request)
+    {
+        $request->validate([
+            'slug' => ['required', 'string', 'in:' . implode(',', array_keys(config('footer_pages')))],
+            'index' => 'required|integer|min:0',
+        ]);
+
+        try {
+            $page = DB::table('footer_pages')->where('slug', $request->slug)->first();
+            $images = json_decode($page->images ?? '[]', true) ?: [];
+
+            if (!isset($images[$request->index])) {
+                return response()->json(['message' => 'Image not found'], 404);
+            }
+
+            $imagePath = $images[$request->index];
+            if (str_starts_with($imagePath, '/uploads/footer/')) {
+                $filePath = public_path($imagePath);
+                if (File::exists($filePath)) {
+                    File::delete($filePath);
+                }
+            }
+
+            array_splice($images, $request->index, 1);
+            DB::table('footer_pages')->where('slug', $request->slug)->update([
+                'images' => json_encode($images),
+                'updated_at' => now(),
+            ]);
+
+            return response()->json(['message' => 'Image removed']);
+        } catch (\Throwable $e) {
+            return response()->json(['message' => 'Could not remove image: ' . $e->getMessage()], 500);
+        }
     }
 
     public function updateSettings(Request $request)
@@ -201,10 +296,10 @@ class AdminController extends Controller
     public function addReview(Request $request)
     {
         $request->validate([
-            'reviewer_name' => 'required',
-            'rating' => 'required|numeric|min:1|max:5',
-            'review_date' => 'required',
-            'review_text' => 'required',
+            'reviewer_name' => 'required|string|max:255',
+            'rating' => 'required|integer|min:1|max:5',
+            'review_date' => 'required|string|max:50',
+            'review_text' => 'required|string',
         ]);
 
         $avatarLetter = strtoupper(substr($request->reviewer_name, 0, 1));
@@ -220,6 +315,32 @@ class AdminController extends Controller
                 'updated_at' => now(),
             ]);
             return response()->json(['message' => 'Review added successfully']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Database error'], 500);
+        }
+    }
+
+    public function updateReview(Request $request)
+    {
+        $validated = $request->validate([
+            'id' => 'required|integer|exists:app_reviews,id',
+            'reviewer_name' => 'required|string|max:255',
+            'rating' => 'required|integer|min:1|max:5',
+            'review_date' => 'required|string|max:50',
+            'review_text' => 'required|string',
+        ]);
+
+        try {
+            DB::table('app_reviews')->where('id', $validated['id'])->update([
+                'reviewer_name' => $validated['reviewer_name'],
+                'rating' => $validated['rating'],
+                'review_date' => $validated['review_date'],
+                'review_text' => $validated['review_text'],
+                'avatar_letter' => strtoupper(substr($validated['reviewer_name'], 0, 1)),
+                'updated_at' => now(),
+            ]);
+
+            return response()->json(['message' => 'Review updated successfully']);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Database error'], 500);
         }

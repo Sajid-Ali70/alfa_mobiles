@@ -383,6 +383,168 @@ body {
     text-decoration: none;
 }
 
+/* App footer */
+.footer-picture {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin: 0 auto;
+}
+
+.app-footer {
+    max-width: 800px;
+    margin: 32px auto 0;
+    padding: 0 16px 16px;
+    color: #111;
+}
+
+.app-footer-links {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 8px 20px;
+    border: 1px solid #ececec;
+    border-radius: 22px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.app-footer-column {
+    min-width: 0;
+}
+
+.app-footer-column:first-child {
+    padding-right: 20px;
+    border-right: 1px solid #d8d8d8;
+}
+
+.app-footer-column:last-child {
+    padding-left: 20px;
+}
+
+.app-footer-link {
+    display: grid;
+    grid-template-columns: 56px minmax(0, 1fr) 16px;
+    align-items: center;
+    gap: 12px;
+    min-height: 68px;
+    color: #111;
+    text-decoration: none;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.app-footer-link:not(:last-child) {
+    border-bottom: 1px solid #dedede;
+}
+
+.app-footer-link > i:first-child {
+    color: #b20d0d;
+    font-size: 28px;
+    text-align: center;
+}
+
+.app-footer-chevron {
+    color: #111;
+    font-size: 14px;
+    justify-self: end;
+}
+
+.app-download-banner {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    min-height: 144px;
+    margin-top: 30px;
+    padding: 20px 5%;
+    border-radius: 24px;
+    background: linear-gradient(110deg, #a90000, #c40000);
+    color: #fff;
+}
+
+.app-download-icon {
+    flex: 0 0 auto;
+    padding-right: 24px;
+    border-right: 4px solid #fff;
+    font-size: 68px;
+}
+
+.app-download-copy {
+    flex: 1;
+    min-width: 0;
+}
+
+.app-download-copy h2 {
+    margin: 0 0 4px;
+    color: #fff;
+    font-size: 32px;
+    font-weight: 700;
+}
+
+.app-download-copy p {
+    margin: 0;
+    color: #fff;
+    font-size: 20px;
+    line-height: 1.35;
+}
+
+.google-play-badge {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 18px;
+    border: 2px solid #fff;
+    border-radius: 14px;
+    background: #fff;
+    color: #333;
+    font-size: 16px;
+    font-weight: 700;
+    white-space: nowrap;
+    text-decoration: none;
+}
+
+.google-play-badge:hover,
+.google-play-badge:focus {
+    background: #f5f5f5;
+    color: #111;
+}
+
+.google-play-badge > i {
+    color: #34a853;
+    font-size: 24px;
+}
+
+.app-footer-copyright {
+    margin-top: 24px;
+    text-align: center;
+    font-size: 16px;
+}
+
+.footer-modal-description {
+    white-space: pre-line;
+}
+
+.footer-modal-images {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.footer-modal-images:empty {
+    display: none;
+}
+
+.footer-modal-images img {
+    display: block;
+    max-width: 100%;
+    max-height: 420px;
+    margin: 0 auto;
+    border-radius: 8px;
+    object-fit: contain;
+}
+
 @media (max-width: 576px) {
     .navbar-play {
         padding: 4px 0;
@@ -407,6 +569,66 @@ body {
         height: 28px;
         margin-left: 14px;
         font-size: 12px;
+    }
+
+    .app-footer-links {
+        grid-template-columns: 1fr;
+        padding: 8px 16px;
+    }
+
+    .app-footer-column:first-child {
+        padding-right: 0;
+        border-right: 0;
+        border-bottom: 1px solid #d8d8d8;
+    }
+
+    .app-footer-column:last-child {
+        padding-left: 0;
+    }
+
+    .app-footer-link {
+        grid-template-columns: 42px minmax(0, 1fr) 16px;
+        gap: 10px;
+        min-height: 60px;
+        font-size: 15px;
+    }
+
+    .app-footer-link > i:first-child {
+        font-size: 24px;
+    }
+
+    .app-download-banner {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 16px;
+        padding: 20px;
+        text-align: center;
+    }
+
+    .app-download-icon {
+        padding-right: 16px;
+        font-size: 48px;
+    }
+
+    .app-download-copy {
+        flex: 1 1 180px;
+        text-align: left;
+    }
+
+    .app-download-copy h2 {
+        font-size: 22px;
+    }
+
+    .app-download-copy p {
+        font-size: 15px;
+    }
+
+    .google-play-badge {
+        margin: 0 auto;
+    }
+
+    .app-footer-copyright {
+        font-size: 14px;
     }
 }
 

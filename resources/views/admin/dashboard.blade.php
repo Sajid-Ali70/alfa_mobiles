@@ -346,6 +346,14 @@
             max-height: 100%;
         }
 
+        .footer-image-preview {
+            width: 100%;
+            height: 150px;
+            border-radius: 8px;
+            object-fit: contain;
+            background: #0d1117;
+        }
+
         .btn-remove {
             background: rgba(220, 53, 69, 0.1);
             color: #ff4d4d;
@@ -558,6 +566,9 @@
             <a class="nav-link" id="nav-playstore" onclick="showSection('playstore')">
                 <i class="fab fa-google-play"></i> Play Store Details
             </a>
+            <a class="nav-link" id="nav-footer-pages" onclick="showSection('footer-pages')">
+                <i class="fas fa-file-alt"></i> Footer Content
+            </a>
             <a class="nav-link" id="nav-reviews" onclick="showSection('reviews')">
                 <i class="fas fa-star"></i> Manage Reviews
             </a>
@@ -592,6 +603,9 @@
             </div>
             <div class="custom-tab-item" id="tab-playstore" onclick="switchToTab('playstore')">
                 <i class="fab fa-google-play"></i> App Settings
+            </div>
+            <div class="custom-tab-item" id="tab-footer-pages" onclick="switchToTab('footer-pages')">
+                <i class="fas fa-file-alt"></i> Footer Content
             </div>
             <div class="custom-tab-item" id="tab-reviews" onclick="switchToTab('reviews')">
                 <i class="fas fa-star"></i> Reviews
@@ -757,6 +771,47 @@
             </form>
         </section>
 
+        <!-- Section: Footer Content -->
+        <section id="footer-pagesSection" class="dashboard-section d-none">
+            <form id="footerPagesForm" enctype="multipart/form-data">
+                @csrf
+                <div class="admin-card">
+                    <h5 class="section-title">Footer Link Content</h5>
+                    <p class="section-desc">Add a description and multiple images for each footer link. Visitors will see this content in a closeable modal.</p>
+
+                    @foreach($footerPages as $page)
+                    <div class="admin-card">
+                        <h6 class="section-title">{{ $page['title'] }}</h6>
+                        <div class="mb-3">
+                            <label class="form-label" for="footer-description-{{ $page['slug'] }}">Description</label>
+                            <textarea id="footer-description-{{ $page['slug'] }}" name="pages[{{ $page['slug'] }}][description]" class="form-control" rows="4">{{ $page['description'] }}</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="footer-images-{{ $page['slug'] }}">Add Images</label>
+                            <input id="footer-images-{{ $page['slug'] }}" type="file" name="pages[{{ $page['slug'] }}][images][]" class="form-control" accept="image/*" multiple>
+                        </div>
+                        @if(count($page['images']))
+                        <div class="row g-3">
+                            @foreach($page['images'] as $imageIndex => $image)
+                            <div class="col-6 col-md-3" id="footer-image-{{ $page['slug'] }}-{{ $imageIndex }}">
+                                <img src="{{ $image }}" alt="{{ $page['title'] }} image" class="footer-image-preview">
+                                <button type="button" class="btn-remove" onclick="removeFooterPageImage('{{ $page['slug'] }}', {{ $imageIndex }})">
+                                    <i class="fas fa-trash-alt"></i> Remove Image
+                                </button>
+                            </div>
+                            @endforeach
+                        </div>
+                        @endif
+                    </div>
+                    @endforeach
+
+                    <button type="submit" class="btn-primary-custom btn-save-main py-3 mt-4">
+                        <i class="fas fa-save"></i> Save Footer Content
+                    </button>
+                </div>
+            </form>
+        </section>
+
         <!-- Section: Reviews -->
         <section id="reviewsSection" class="dashboard-section d-none">
             <div class="admin-card">
@@ -784,7 +839,25 @@
                                 <td>{{ $rev->rating }} <i class="fas fa-star text-warning small"></i></td>
                                 <td>{{ $rev->review_date }}</td>
                                 <td class="review-text-cell">{{ $rev->review_text }}</td>
-                                <td><button class="btn btn-sm btn-danger" onclick="deleteReview({{ $rev->id }})"><i class="fas fa-trash"></i></button></td>
+                                <td class="text-nowrap">
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm btn-primary"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#editReviewModal"
+                                        data-review-id="{{ $rev->id }}"
+                                        data-review-name="{{ $rev->reviewer_name }}"
+                                        data-review-rating="{{ $rev->rating }}"
+                                        data-review-date="{{ $rev->review_date }}"
+                                        data-review-text="{{ $rev->review_text }}"
+                                        onclick="openEditReview(this)"
+                                        aria-label="Edit review by {{ $rev->reviewer_name }}">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-danger" onclick="deleteReview({{ $rev->id }})" aria-label="Delete review">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
                             </tr>
                             @endforeach
                         </tbody>
@@ -792,6 +865,49 @@
                 </div>
             </div>
         </section>
+
+        <div class="modal fade" id="editReviewModal" tabindex="-1" aria-labelledby="editReviewModalTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content" style="background: var(--card-bg); color: var(--text-main); border: 1px solid var(--border-color);">
+                    <form id="editReviewForm">
+                        @csrf
+                        <input type="hidden" name="id" id="editReviewId">
+                        <div class="modal-header" style="border-color: var(--border-color);">
+                            <h2 class="modal-title fs-5" id="editReviewModalTitle">Edit Review</h2>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label" for="editReviewName">Reviewer Name</label>
+                                <input id="editReviewName" type="text" name="reviewer_name" class="form-control" required>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label" for="editReviewRating">Rating</label>
+                                    <select id="editReviewRating" name="rating" class="form-control" required>
+                                        @for($rating = 5; $rating >= 1; $rating--)
+                                        <option value="{{ $rating }}">{{ $rating }} Stars</option>
+                                        @endfor
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="editReviewDate">Date</label>
+                                    <input id="editReviewDate" type="text" name="review_date" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <label class="form-label" for="editReviewText">Review Text</label>
+                                <textarea id="editReviewText" name="review_text" class="form-control" rows="4" required></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer" style="border-color: var(--border-color);">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn-primary-custom">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
 
         <!-- Section: APK Management -->
         <section id="apkSection" class="dashboard-section d-none">
@@ -843,6 +959,7 @@
         </section>
     </main>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('show');
@@ -925,14 +1042,107 @@
             if (res.ok) alert("Settings saved!");
         };
 
+        document.getElementById('footerPagesForm').onsubmit = async function(e) {
+            e.preventDefault();
+
+            try {
+                const res = await fetch("{{ route('admin.footer_pages.update') }}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: new FormData(this)
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    alert(data.message || 'Could not save footer content.');
+                    return;
+                }
+
+                alert(data.message);
+                location.reload();
+            } catch (error) {
+                alert('Could not save footer content. Please check your connection and try again.');
+                console.error(error);
+            }
+        };
+
+        async function removeFooterPageImage(slug, index) {
+            if (!confirm('Remove this footer image?')) return;
+
+            try {
+                const res = await fetch("{{ route('admin.footer_pages.remove_image') }}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ slug, index })
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    alert(data.message || 'Could not remove footer image.');
+                    return;
+                }
+
+                document.getElementById(`footer-image-${slug}-${index}`).remove();
+            } catch (error) {
+                alert('Could not remove footer image. Please check your connection and try again.');
+                console.error(error);
+            }
+        }
+
         document.getElementById('addReviewForm').onsubmit = async function(e) {
             e.preventDefault();
             const res = await fetch("{{ route('admin.reviews.add') }}", {
                 method: 'POST',
-                headers: {'X-CSRF-TOKEN': '{{ csrf_token() }}'},
+                headers: {'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json'},
                 body: new FormData(this)
             });
-            if (res.ok) location.reload();
+            const data = await res.json();
+            if (res.ok) {
+                location.reload();
+            } else {
+                alert(data.message || 'Could not add review.');
+            }
+        };
+
+        function openEditReview(button) {
+            document.getElementById('editReviewId').value = button.dataset.reviewId;
+            document.getElementById('editReviewName').value = button.dataset.reviewName;
+            document.getElementById('editReviewRating').value = button.dataset.reviewRating;
+            document.getElementById('editReviewDate').value = button.dataset.reviewDate;
+            document.getElementById('editReviewText').value = button.dataset.reviewText;
+        }
+
+        document.getElementById('editReviewForm').onsubmit = async function(e) {
+            e.preventDefault();
+
+            try {
+                const res = await fetch("{{ route('admin.reviews.update') }}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: new FormData(this)
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    alert(data.message || 'Could not update review.');
+                    return;
+                }
+
+                location.reload();
+            } catch (error) {
+                alert('Could not update review. Please check your connection and try again.');
+                console.error(error);
+            }
         };
 
         async function deleteReview(id) {

@@ -264,6 +264,7 @@
 
     </main>
 
+
     <footer class="footer-play">
         <div class="container text-center">
             <div class="footer-links">

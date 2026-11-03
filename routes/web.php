@@ -30,12 +30,22 @@ Route::get('/', function () {
         ];
     }
 
+    $footerContent = collect(config('footer_pages'))->mapWithKeys(function ($title, $slug) {
+        $page = DB::table('footer_pages')->where('slug', $slug)->first();
+
+        return [$slug => [
+            'title' => $title,
+            'description' => $page->description ?? '',
+            'images' => json_decode($page->images ?? '[]', true) ?: [],
+        ]];
+    });
+
     $theme = $settings->active_theme ?? 'playstore';
     if ($theme === 'landing') {
         return view('index', compact('settings'));
     }
 
-    return view('frontend.index', compact('settings'));
+    return view('frontend.index', compact('settings', 'footerContent'));
 });
 
 // Admin Login Routes
@@ -50,6 +60,8 @@ Route::middleware(['admin.auth'])->group(function () {
     // Play Store Settings API
     Route::post('/admin/settings/update', [AdminController::class, 'updateSettings'])->name('admin.settings.update');
     Route::post('/admin/settings/remove-screenshot', [AdminController::class, 'removeScreenshot'])->name('admin.settings.remove_screenshot');
+    Route::post('/admin/footer-pages/update', [AdminController::class, 'updateFooterPages'])->name('admin.footer_pages.update');
+    Route::post('/admin/footer-pages/remove-image', [AdminController::class, 'removeFooterPageImage'])->name('admin.footer_pages.remove_image');
 
     // APK Management API
     Route::post('/admin/apk/update-url', [AdminController::class, 'updateApkUrl'])->name('admin.apk.update_url');
@@ -57,6 +69,7 @@ Route::middleware(['admin.auth'])->group(function () {
 
     // Review Management API
     Route::post('/admin/reviews/add', [AdminController::class, 'addReview'])->name('admin.reviews.add');
+    Route::post('/admin/reviews/update', [AdminController::class, 'updateReview'])->name('admin.reviews.update');
     Route::post('/admin/reviews/delete', [AdminController::class, 'deleteReview'])->name('admin.reviews.delete');
 
     // Security API

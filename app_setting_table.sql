@@ -23,6 +23,19 @@ CREATE TABLE IF NOT EXISTS `app_settings` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Content shown when visitors open a footer link.
+CREATE TABLE IF NOT EXISTS `footer_pages` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `slug` varchar(100) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `description` longtext DEFAULT NULL,
+  `images` longtext DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `footer_pages_slug_unique` (`slug`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- Insert refined data
 INSERT INTO `app_settings` (`id`, `app_name`, `developer`, `category`, `tags`, `app_icon`, `rating_score`, `reviews_count`, `downloads_count`, `content_rating`, `updated_date`, `description`, `release_notes`, `screenshots`, `apk_url`, `developer_website`, `developer_email`, `developer_address`, `active_theme`, `updated_at`)
 VALUES (1,

@@ -267,28 +267,122 @@
         <div class="text-center py-4 text-muted">No reviews yet.</div>
         @endforelse
 
-        <button class="btn btn-outline-success w-100 rounded-pill mb-5 py-2 fw-medium" style="font-size: 14px; border-color: #dadce0; color: var(--play-green)">See all reviews</button>
-
+        <button class="btn btn-outline-success w-100 rounded-pill mb-3 py-2 fw-medium" style="font-size: 14px; border-color: #dadce0; color: var(--play-green)">See all reviews</button>
+<div class="text-center">
+        <img src="{{ asset('img/image.png') }}" alt="footer picture" class="footer-picture" >
+    </div>
     </main>
 
-    <footer class="footer-play">
-        <div class="container text-center">
-            <div class="footer-links">
-                <a href="#">Google Play</a>
-                <a href="#">Play Pass</a>
-                <a href="#">Play Points</a>
-                <a href="#">Gift cards</a>
-                <a href="#">Redeem</a>
-                <a href="#">Refund policy</a>
+    <footer class="app-footer">
+        <div class="app-footer-links">
+            <div class="app-footer-column">
+                <a href="#" class="app-footer-link" data-footer-page="about-company">
+                    <i class="far fa-building" aria-hidden="true"></i>
+                    <span>About Us /<br>Company</span>
+                    <i class="fas fa-chevron-right app-footer-chevron" aria-hidden="true"></i>
+                </a>
+                <a href="#" class="app-footer-link" data-footer-page="terms">
+                    <i class="far fa-file-alt" aria-hidden="true"></i>
+                    <span>Terms &amp; Conditions</span>
+                    <i class="fas fa-chevron-right app-footer-chevron" aria-hidden="true"></i>
+                </a>
+                <a href="#" class="app-footer-link" data-footer-page="refund-return">
+                    <i class="fas fa-sync-alt" aria-hidden="true"></i>
+                    <span>Refund &amp; Return Policy</span>
+                    <i class="fas fa-chevron-right app-footer-chevron" aria-hidden="true"></i>
+                </a>
+                <a href="#" class="app-footer-link" data-footer-page="how-to-order">
+                    <i class="fas fa-shopping-cart" aria-hidden="true"></i>
+                    <span>How to Order</span>
+                    <i class="fas fa-chevron-right app-footer-chevron" aria-hidden="true"></i>
+                </a>
             </div>
-            <div class="mt-3">
-                &copy; {{ date('Y') }} {{ $appName }}. All rights reserved.
+            <div class="app-footer-column">
+                <a href="#" class="app-footer-link" data-footer-page="company-legal">
+                    <i class="far fa-file-alt" aria-hidden="true"></i>
+                    <span>Company &amp; Legal<br>Information</span>
+                    <i class="fas fa-chevron-right app-footer-chevron" aria-hidden="true"></i>
+                </a>
+                <a href="#" class="app-footer-link" data-footer-page="privacy">
+                    <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                    <span>Privacy Policy</span>
+                    <i class="fas fa-chevron-right app-footer-chevron" aria-hidden="true"></i>
+                </a>
+                <a href="#" class="app-footer-link" data-footer-page="warranty">
+                    <i class="far fa-check-circle" aria-hidden="true"></i>
+                    <span>Warranty Claim</span>
+                    <i class="fas fa-chevron-right app-footer-chevron" aria-hidden="true"></i>
+                </a>
+                <a href="#" class="app-footer-link" data-footer-page="contact">
+                    <i class="fas fa-headset" aria-hidden="true"></i>
+                    <span>Helpline / WhatsApp /<br>Contact Us</span>
+                    <i class="fas fa-chevron-right app-footer-chevron" aria-hidden="true"></i>
+                </a>
             </div>
         </div>
+
+        <div class="app-download-banner">
+            <i class="fas fa-mobile-alt app-download-icon" aria-hidden="true"></i>
+            <div class="app-download-copy">
+                <h2>Download Our App</h2>
+                <p>Get the {{ $appName }} app for a faster<br class="d-none d-md-block"> booking of your mobile.</p>
+            </div>
+            <a href="{{ $apkUrl }}" {{ $isExternal ? 'target="_blank" rel="noopener noreferrer"' : 'download' }} class="google-play-badge" aria-label="Download {{ $appName }} for Android">
+                <i class="fab fa-google-play" aria-hidden="true"></i>
+                <span>Download Now</span>
+            </a>
+        </div>
+
+        <div class="app-footer-copyright">
+            &copy; {{ date('Y') }} {{ $appName }}. All rights reserved.
+        </div>
     </footer>
+
+    <div class="modal fade" id="footerPageModal" tabindex="-1" aria-labelledby="footerPageModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title fs-5" id="footerPageModalTitle"></h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="footer-modal-description" id="footerPageModalDescription"></div>
+                    <div class="footer-modal-images" id="footerPageModalImages"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('js/firebase-config.js') }}"></script>
     <script src="{{ asset('js/app.js') }}"></script>
+    <script>
+        const footerContent = @json($footerContent);
+        const footerPageModal = new bootstrap.Modal(document.getElementById('footerPageModal'));
+
+        document.querySelectorAll('[data-footer-page]').forEach((link) => {
+            link.addEventListener('click', (event) => {
+                event.preventDefault();
+
+                const page = footerContent[link.dataset.footerPage];
+                if (!page) return;
+
+                document.getElementById('footerPageModalTitle').textContent = page.title;
+                document.getElementById('footerPageModalDescription').textContent = page.description || 'Information coming soon.';
+
+                const imageContainer = document.getElementById('footerPageModalImages');
+                imageContainer.replaceChildren();
+                (page.images || []).forEach((imagePath) => {
+                    const image = document.createElement('img');
+                    image.src = imagePath;
+                    image.alt = page.title;
+                    image.loading = 'lazy';
+                    imageContainer.appendChild(image);
+                });
+
+                footerPageModal.show();
+            });
+        });
+    </script>
 </body>
 </html>
