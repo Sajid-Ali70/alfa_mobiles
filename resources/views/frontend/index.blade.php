@@ -84,9 +84,12 @@
             </a>
         </div>
 
+        <div class="section-content mb-4 text-center"><b>          
+            Current Level: 0 | Google Play Store Launch at Level 1</b>
+        </div>
         <div class="section-content mb-4 text-center">
             <i class="fas fa-tablet-alt me-2" style="color: var(--play-green)"></i>
-            This app is compatible with all of your devices.
+            This app is compatible with Android devices.
         </div>
 
         <!-- Screenshots -->
