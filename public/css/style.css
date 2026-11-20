@@ -215,6 +215,11 @@ body {
     margin-bottom: 24px;
 }
 
+.level-launch-notice {
+    font-size: clamp(10px, 3.25vw, 14px);
+    white-space: nowrap;
+}
+
 /* App Info Grid */
 .app-info-grid {
     display: grid;
